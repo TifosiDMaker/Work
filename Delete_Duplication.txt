@@ -1,0 +1,34 @@
+Sub 删重()
+Dim i As Integer
+Dim k
+For i = 1 To Range("d65535").End(xlUp).Row
+Line1:
+    If Cells(i, 4) = Cells(i + 1, 4) Then
+        If Cells(i, 2).Interior.ColorIndex = 6 Or Cells(i + 1, 2).Interior.ColorIndex = 6 Then
+            i = i + 1
+            GoTo Line1
+            Else
+        End If
+    Application.Goto Cells(i, 2), True
+    Cells(i, 2).Interior.ColorIndex = 6
+    Cells(i + 1, 2).Interior.ColorIndex = 6
+    k = MsgBox(Cells(i, 2).Value & vbCrLf & Cells(i + 1, 2).Value, vbYesNoCancel, "是否删除重复？")
+        If k = 6 Then
+        Rows(i + 1).Delete
+        Cells(i, 2).Interior.ColorIndex = xlNone
+        Cells(i + 1, 2).Interior.ColorIndex = xlNone
+            Do Until Cells(i, 4) <> Cells(i + 1, 4)
+            GoTo Line1
+            Loop
+        ElseIf k = 7 Then
+        Cells(i, 2).Interior.ColorIndex = xlNone
+        Cells(i + 1, 2).Interior.ColorIndex = xlNone
+        Else
+        Cells(i, 2).Interior.ColorIndex = xlNone
+        Cells(i + 1, 2).Interior.ColorIndex = xlNone
+        i = i - 1
+        Stop
+        End If
+    End If
+Next i
+End Sub
