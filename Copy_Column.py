@@ -31,5 +31,7 @@ for root, dirs, files in os.walk(dest_dir):
             k = k + 1
         ws['B1'].fill
         for j in range(len(t.rows)):
+            if t.cell(j, 2).text == "":
+                continue
             ws.append({'B': t.cell(j, 2).text})
 wb.save('test.xlsx')
