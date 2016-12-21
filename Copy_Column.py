@@ -39,7 +39,7 @@ for root, dirs, files in os.walk(dest_dir):
             if t.cell(j, 2).text == "":
                 continue
             strr = str(t.cell(j, 2).text)
-            strr = re.sub('<'r'/?[a-z]{0,3}[0-9]{0,5}''>','',strr)
+            strr = re.sub('<'r'/?[a-z]{0,3}[0-9]{0,5}/?''>','',strr)
             ws.append({'B': strr})
             k += 1
 wb.save(dest_dir + '/删重文件.xlsx')
