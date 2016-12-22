@@ -1,0 +1,198 @@
+Option Explicit
+
+'Callback for g1b1 onAction
+Sub AA(control As IRibbonControl)
+    If control.ID = "g1b1" Then
+        删除完全匹配
+    ElseIf control.ID = "g1b2" Then
+        字符分列
+    ElseIf control.ID = "g1b3" Then
+        删重
+    ElseIf control.ID = "g2b1" Then
+        Excel对照
+    ElseIf control.ID = "g3b1" Then
+        分列
+    End If
+End Sub
+
+
+
+
+Function convert(ByVal r)
+If r Like "[A-Z]*" Then convert = Range(r & 1).Column
+If r Like "#*" And r > 0 And r <= 256 Then convert = Split(Cells(1, r).Address, "$")(1)
+End Function
+
+
+
+
+
+Function GetNum(Srg As String, Optional n As Integer = False)
+
+    Dim i As Integer
+    Dim s, MyString As String
+    Dim Bol As Boolean
+
+    For i = 1 To Len(Srg)
+        s = Mid(Srg, i, 1)
+        Select Case n
+            Case 0
+                Bol = s Like "#"
+                ' Bol = s Like "[0-9]"
+            Case 1
+                Bol = Asc(s) < 0 And Asc(s) <> -24157 And Asc(s) <> -23636 And Asc(s) <> -23622 And Asc(s) <> -23621 And Asc(s) <> -24158
+                ' 中文为负数，不要用AscB或者AscW
+            Case 2
+                Bol = s Like "[a-zA-Z]"
+                ' zA之间不要带半角逗号
+            Case Else
+                Exit Function
+        End Select
+        If Bol Then MyString = MyString & s
+    Next i
+    
+    If MyString <> "" Then _
+        GetNum = IIf(n = 1 Or n = 2, MyString, Val(MyString))
+
+End Function
+
+
+Sub 字符分列()
+' by oicu#lsxk.org 2009/7/31
+' 数据在第一列(A列)，结果放在第二列(B列)之后
+' 提取数字时设置不带小数点的数值格式防止出现1.21314E+12这种科学记数法
+' 设置列宽自动适应数据长度
+' 修正全字母时提取得到数字0
+' 英文标点不会提取出来的
+
+    Dim i As Integer
+    For i = 1 To WorksheetFunction.CountA(Columns(2))
+    
+        ' 默认为提取数字
+        Cells(i, 3).NumberFormatLocal = "0_ "
+        'Cells(i, 2).Value = GetNum(Cells(i, 1).Value)
+        Cells(i, 3).Value = GetNum(Cells(i, 2).Value, 0)
+        
+        ' 提取中文及中文标点
+        Cells(i, 4).Value = GetNum(Cells(i, 2).Value, 1)
+        
+        ' 提取字母
+        Cells(i, 5).Value = GetNum(Cells(i, 2).Value, 2)
+
+    Next i
+    '英文所在列
+    'Columns("E:E").EntireColumn.AutoFit
+    '数字所在列
+    'Columns("C:C").EntireColumn.AutoFit
+    '中文所在列
+    'Columns("D:D").EntireColumn.AutoFit
+    
+
+End Sub
+
+Sub 删重()
+Dim i As Integer
+Dim k
+'排序
+Columns("A:F").Sort Key1:=Range("D1"), Header:=xlGuess
+For i = 1 To Range("d65535").End(xlUp).Row
+Line1:
+    If Cells(i, 4) = Cells(i + 1, 4) Then
+    Application.GoTo Cells(i, 2), True
+    Cells(i, 2).Interior.ColorIndex = 6
+    Cells(i + 1, 2).Interior.ColorIndex = 6
+    k = MsgBox(Cells(i, 2).Value & vbCrLf & Cells(i + 1, 2).Value, vbYesNoCancel, "是否删除重复？")
+        If k = 6 Then
+        Rows(i + 1).Delete
+        Cells(i, 2).Interior.ColorIndex = xlNone
+        Cells(i + 1, 2).Interior.ColorIndex = xlNone
+            Do Until Cells(i, 4) <> Cells(i + 1, 4)
+            GoTo Line1
+            Loop
+        ElseIf k = 7 Then
+        Cells(i, 2).Interior.ColorIndex = xlNone
+        Cells(i + 1, 2).Interior.ColorIndex = xlNone
+        Else
+        Cells(i, 2).Interior.ColorIndex = xlNone
+        Cells(i + 1, 2).Interior.ColorIndex = xlNone
+        Stop
+        End If
+    End If
+Next i
+End Sub
+
+
+Sub Excel对照()
+'取消隐藏
+Range(Cells(1, 1), Cells(1, 20)).EntireColumn.Hidden = False
+'i, j 单元格行列计数，m, n 循环计数，x 最大行数寄存器
+Dim i, j, k, m, n, x As Integer
+'a, b 译文表格坐标
+Dim a, b As Integer
+'k = 表格列数 + 1
+'k = Range("jj1").End(xlToLeft).Column
+k = convert(InputBox("请输入原始表格的最右列序号（大写字母）"))
+'找出表格行数
+Dim c As Integer
+c = 1
+'c 最大行所在列寄存器
+x = Cells(65535, 1).End(xlUp).Row
+'默认首列为最大行
+For m = 1 To k - 1
+    If Cells(65535, c).End(xlUp).Row < Cells(65535, m + 1).End(xlUp).Row Then
+        x = Cells(65535, m + 1).End(xlUp).Row
+        c = Cells(65535, m + 1).End(xlUp).Column
+    End If
+Next m
+'得出表格范围，x 行 k 列
+'历遍译文表格
+For j = 1 To k
+    b = j + k
+    For i = 1 To x
+        a = i
+        If Cells(a, b) <> "" Then
+            '译文在上
+            Cells(i, j) = Cells(a, b).Value & vbLf & Cells(i, j).Value
+            '译文在下
+            'Cells(i, j) = Cells(i, j).Value & vbLf & Cells(a, b).Value
+        Else
+        End If
+    Next i
+Next j
+For i = 1 To x
+    Rows(i).EntireRow.AutoFit
+Next i
+Cells(1, k + 1).Resize(x, k + 1).Delete
+End Sub
+
+
+Sub 分列()
+Dim i, j, k As Integer
+'i = 原始列, j = 左列, k = 右列
+j = 1
+k = 1
+For i = 1 To Range("a65535").End(xlUp).Row
+    If i Mod 2 = 1 Then
+    Cells(j, 2) = Cells(i, 1)
+    j = j + 1
+    Else
+    Cells(k, 3) = Cells(i, 1)
+    k = k + 1
+    End If
+Next i
+End Sub
+
+Sub 删除完全匹配()
+Dim i, j As Integer
+Columns("B").RemoveDuplicates Columns:=1, Header:=xlYes
+For i = 1 To Cells(65535, 2).End(xlUp).Row
+    If Cells(i, 2).Interior.ColorIndex = 15 Or Cells(i, 2).Interior.ColorIndex = 48 Or Cells(i, 2).Interior.ColorIndex = 37 Then
+        Rows(i).Delete
+        i = i - 1
+    Else
+    End If
+Next i
+For j = 1 To Cells(65535, 2).End(xlUp).Row
+    Cells(j, 1) = j
+Next j
+End Sub
