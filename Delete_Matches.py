@@ -1,6 +1,8 @@
 import os
 import win32com.client
+import time
 
+start = time.time()
 dest_dir = input('请输入外部审校文件所在路径.\n>')
 dest_dir = dest_dir.replace("\\","/")
 
@@ -19,3 +21,4 @@ for root, dirs, files in os.walk(dest_dir):
                 #rcount -= 1
         thisdoc.Save()
         thisdoc.Close()
+print (time.time() - start)
