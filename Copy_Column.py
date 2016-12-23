@@ -10,7 +10,7 @@ start = time.time()
 d ={}
 
 #os part
-dest_dir = input('请输入外部审校文件所在路径.\n>')
+dest_dir = input('请输入外部审校文件所在路径。\n>')
 dest_dir = dest_dir.replace("\\", "/")
 
 for root, dirs, files in os.walk(dest_dir):
@@ -35,10 +35,11 @@ for name in s:
         strr = re.sub('<'r'/?[a-z]{0,3}[0-9]{0,5}/?''>', '', strr)
         d[j] = strr
     o_d = OrderedDict(d)
-    for j in d:
-        ws.append({'B': d[j]})
+    r1 = list(o_d.keys())
+    r2 = list(o_d.values())
+    for row in zip(r1, r2):
+        ws.append(row)
 
 wb.save(dest_dir + '/删重文件.xlsx')
-end = time.time()
-cost = end - start
-print (cost)
+
+print (time.time() - start)
