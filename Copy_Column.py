@@ -4,7 +4,14 @@ from openpyxl.styles import PatternFill
 from docx import Document
 import re
 import time
-start = time.time()
+
+def del_blank(text):
+    return text != ''
+
+def delete_paragraph(paragraph):
+    p = paragraph._element
+    p.getparent().remove(p)
+    p._p = p._element = None
 
 #excel part
 wb = Workbook()
@@ -13,29 +20,27 @@ fil = PatternFill(start_color='FFFF00', end_color='FFFF00',fill_type='solid')
 
 #os part
 dest_dir = input('请输入外部审校文件所在路径。\n>').replace("\\", "/")
-
-def copy(range):
-    return str(t.cell(range, 2).text)
-
-def del_blank(text):
-    return text != ''
-
-def clean_tag(text2):
-    return re.sub('<'r'/?[a-z]{0,3}[0-9]{0,5}/?''>', '', text2)
-
+start = time.time()
 for root, dirs, files in os.walk(dest_dir):
     pass
 
 for name in files:
     t = Document(os.path.join(dest_dir, name)).tables[0]
+    j = []
+    j.clear()
     ws.append({'B': name})
     ws['B' + str(ws.max_row)].fill = fil
-    j = list(range(len(t.rows)))
-    r1 = list(map(clean_tag, filter(del_blank,map(copy, j))))
+    i = 0
+    for cell in t.columns[1].cells:
+        if '100%' in cell.text or 'CM' in cell.text:
+            delete_paragraph(t.cell(i, 2).paragraphs[0])
+        i += 1
+    for cell in t.columns[2].cells:
+        j.append(re.sub('<'r'/?[a-z]{0,3}[0-9]{0,5}/?''>', '', cell.text))
+    r1 = list(filter(del_blank, j))
     r2 = [n for n in range(len(t.rows))]
     for row in zip(r2, r1):
         ws.append(row)
 
 wb.save(dest_dir + '/删重文件.xlsx')
-
 print (time.time() - start)
