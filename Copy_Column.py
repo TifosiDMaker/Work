@@ -13,6 +13,9 @@ def delete_paragraph(paragraph):
     p.getparent().remove(p)
     p._p = p._element = None
 
+def find_word(name):
+    return '.doc' in name
+
 #excel part
 wb = Workbook()
 ws = wb.active
@@ -23,7 +26,7 @@ dest_dir = input('请输入外部审校文件所在路径。\n>').replace("\\", 
 start = time.time()
 for root, dirs, files in os.walk(dest_dir):
     pass
-
+files = filter(find_word,files)
 for name in files:
     t = Document(os.path.join(dest_dir, name)).tables[0]
     j = []
@@ -42,5 +45,5 @@ for name in files:
     for row in zip(r2, r1):
         ws.append(row)
 
-wb.save(dest_dir + '/删重文件.xlsx')
+wb.save(dest_dir[:dest_dir.rfind('/',0,dest_dir.find('External Review')-1)+ 1] + '删重文件.xlsx')
 print (time.time() - start)
