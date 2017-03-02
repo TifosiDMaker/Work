@@ -28,6 +28,7 @@ for root, dirs, files in os.walk(dest_dir):
     pass
 files = filter(find_word,files)
 for name in files:
+    print ('正在处理' + name + '...')
     t = Document(os.path.join(dest_dir, name)).tables[0]
     j = []
     j.clear()
@@ -35,11 +36,11 @@ for name in files:
     ws['B' + str(ws.max_row)].fill = fil
     i = 0
     for cell in t.columns[1].cells:
-        if '100%' in cell.text or 'CM' in cell.text:
+        if '100%' in cell.text or 'CM' in cell.text or 'Draft' in cell.text:
             delete_paragraph(t.cell(i, 2).paragraphs[0])
         i += 1
     for cell in t.columns[2].cells:
-        j.append(re.sub('<'r'/?[a-z]{0,3}[0-9]{0,5}/?''>', '', cell.text))
+        j.append(re.sub('<'r'/?[a-z]{0,3}[0-9]{0,6}/?''>', '', cell.text))
     r1 = list(filter(del_blank, j))
     r2 = [n for n in range(len(t.rows))]
     for row in zip(r2, r1):
